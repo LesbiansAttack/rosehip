@@ -1,10 +1,12 @@
 [package]
-name = "ml-learn"
+name = "rosehip"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+eyre = "0.6.8"
 mnist = { version = "0.5.0", features = ["download"] }
 ndarray = "0.15.6"
+rand = { version = "0.8.5", features = ["small_rng"] }
