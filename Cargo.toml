@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 eyre = "0.6.8"
+log = "0.4.17"
 mnist = "0.5.0"
 ndarray = "0.15.6"
 rand = { version = "0.8.5", features = ["small_rng"] }
+tokio = { version = "1.27.0", features = ["sync"] }

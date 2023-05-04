@@ -26,3 +26,14 @@ pub fn d_softmax_stable(x: Array1<f64>) -> Array1<f64> {
     let sum : f64 = shifted_x.sum();
     shifted_x.iter().map(|i| (i/sum) * (1.0 - (i/sum))).collect()
 }
+
+pub fn squared_error(target: &Array1<f64>, output: &Array1<f64>) -> f64 {
+    // ||x-y||^2 -> (x-y)^T * (x-y)
+    //           -> (x-y) dot (x-y)
+    let distance = target - output;
+    distance.dot(&distance)
+}
+
+pub fn d_squared_error(target: &Array1<f64>, output: &Array1<f64>) -> Array1<f64> {
+    2.0 * (output - target)
+}
