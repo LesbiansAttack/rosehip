@@ -11,7 +11,8 @@ use crate::math::{sigmoid, d_sigmoid, softmax_stable, d_softmax_stable};
 pub enum Activation {
     Sigmoid, 
     Softmax,
-    Layer(Layer)
+    Layer(Layer), 
+    Identity,
 }
 
 #[derive(Debug)]
@@ -31,7 +32,7 @@ impl Layer {
         let biases = Array1::from_vec(vec![rng.gen_range(-1.0..1.0); outputs]);
         Layer {
             number_of_inputs: inputs,
-            number_of_outputs: outputs,
+            number_of_outputs: outputs, 
             weights,
             biases
         }
@@ -51,6 +52,9 @@ pub struct Model {
 
 impl Model {
     pub fn add_layer(mut self, inputs: usize, outputs: usize) -> Model {
+        if let Activation::Layer(l) = &self.layers.last().unwrap() {
+            self.layers.push(Activation::Identity)
+        }
         self.layers.push(Activation::Layer(Layer::new(inputs, outputs)));
         self
     }
@@ -99,6 +103,9 @@ impl Model {
                 },
                 Activation::Layer(layer) => {
                     output_array = layer.calculate_outputs(output_array);
+                },
+                Activation::Identity => {
+
                 }
             }
         }
@@ -110,6 +117,7 @@ impl Model {
         let mut output_array = inputs_array;
         answer_array[*answer as usize] = 1.0; 
         let mut outputs : Vec<Array1<f64>> = vec![];
+        outputs.push(output_array.clone());
         for layer in &self.layers {
             match layer {
                 Activation::Sigmoid => {
@@ -120,9 +128,19 @@ impl Model {
                 },
                 Activation::Layer(layer) => {
                     output_array = layer.calculate_outputs(output_array);
-                }
+                },
+                Activation::Identity => {}
             }
             outputs.push(output_array.clone());
+        }
+
+        let index = &self.layers.len();
+        let mut weights_deltas : Vec<Array2<f64>> = vec![];
+
+        let error = 2.0 * (outputs.last().unwrap() - answer_array) ;
+
+        while index > &0 {
+            
         }
 
         let probability_array = outputs.last().unwrap();
@@ -132,5 +150,24 @@ impl Model {
         //let error = (probability_array - answer_array)* d_softmax_stable();
         Ok(())
     }
+
+    pub fn activation_derivative(activation_function: &Activation, input_vector: &Array1<f64>) -> Result<Array2<f64>> {
+        match activation_function {
+            Activation::Sigmoid => {
+
+            },
+            Activation::Softmax => {
+
+            },
+            Activation::Identity => {
+
+            },
+            Activation::Layer(layer) => {
+                return Err(eyre!("Layer Was Passed To Activation Derivative"));
+            }
+        }
+    }
+
+
 }
 
