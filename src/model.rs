@@ -202,7 +202,7 @@ impl Model {
         while index > 0 {
             let weights = match &self.steps[index] {
                 Step::LinearLayer(layer) => layer.weights.clone(),
-                _ => return Err(eyre!("Tried to retreive Weights from Linear Layer"))
+                _ => return Err(eyre!("Attempted to retreive Weights from Activation Function, expected Linear Layer"))
             };
             let activation_function = self.steps.get(index-1).unwrap();
             let output_before_activation = outputs.get(index - 1).unwrap();
