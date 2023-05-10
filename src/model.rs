@@ -96,8 +96,11 @@ impl ModelBuilder {
             self.steps.push(Step::Identity);
         }
         let mut current_outputs : usize = 0;
+        let mut num_lin_layers : usize = 0;
+
         for (key, layer) in self.steps.iter().enumerate() {
             if let Step::LinearLayer(l) = layer {
+                num_lin_layers += 1;
                 if current_outputs == 0 {
                     current_outputs = l.number_of_outputs;
                     continue;
@@ -114,7 +117,8 @@ impl ModelBuilder {
         
         Ok(Model {
             outputs: current_outputs,
-            steps: self.steps
+            steps: self.steps,
+            num_lin_layers: num_lin_layers,
         })
     }
 }
@@ -122,7 +126,8 @@ impl ModelBuilder {
 #[derive(Debug, Default)]
 pub struct Model {
     outputs: usize,
-    pub steps: Vec<Step>
+    pub steps: Vec<Step>,
+    pub num_lin_layers: usize, 
 }
 
 impl Model {
@@ -221,25 +226,8 @@ impl Model {
             index -= 2;
         }
 
-        // let probability_array = outputs.last().unwrap();
-        // assert_eq!(probability_array.len(), answer_array.len());
-        // let offset = &outputs.len();
-        // let output_after_activation = outputs.get(offset-1).unwrap();
-        // let output_before_activation = outputs.get(offset-2).unwrap();
-        // let input_into_layer = outputs.get(offset-3).unwrap();
-        // let cost = squared_error(&answer_array, probability_array);
-        // let error = d_squared_error(&answer_array, probability_array); // don't we need something
-        // let inputs = input_into_layer.len();
-        // println!("{:?}", &input_into_layer.t());
-        // let delta_weight = &error * &input_into_layer.t();
-        // distance from goal 
-        // squared_error * d-softmax(last-layer-output) 
-        // need to get:
-        // output from layer after activation
-        // output from layer before activation
-        // input into layer
-        //let error = squared_error(answer_array, probability_array); 
-        //let error = (probability_array - answer_array)* d_softmax_stable();
+        weights_deltas.reverse();
+        bias_deltas.reverse();
 
         Ok((final_output,weights_deltas, bias_deltas))
     }
