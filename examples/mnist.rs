@@ -28,60 +28,50 @@ fn main() {
 
 
     for i in 0..epochs {
-        let mut outputs: Vec<(usize, Array2<f64>)> = vec![];
-        let mut weight_deltas: Vec<Vec<Array2<f64>>> = vec![];
-        let mut bias_deltas: Vec<Vec<Array2<f64>>> = vec![];
+        let mut weight_deltas: Vec<Array2<f64>> = vec![];
+        let mut bias_deltas: Vec<Array2<f64>> = vec![];
 
         let indexes = index::sample(&mut rng, 50_000, batch_size);
+
+        let mut correct_results = 0;
+        let mut first_loop = true;
 
         for index in indexes {
             let data = mnist_dataset.training_data.slice(s![index, ..]);
             let label = mnist_dataset.training_labels.get([index, 0]).unwrap();
             let result = model.forward_backward(data.to_owned(), label).unwrap();
-            outputs.push((*label as usize, result.0));
-            weight_deltas.push(result.1);
-            bias_deltas.push(result.2);
-        }
+            
+            if result.0.argmax() == Ok((*label as usize, 0)) {
+                correct_results += 1;
+            }
 
-        let accuracy = outputs.iter().fold(0.0, |acc, elem| {
-            if elem.1.argmax() == Ok((elem.0, 0)) {
-                acc + ( 1.0 / (batch_size as f64) )
+            if first_loop {
+                weight_deltas = result.1;
+                bias_deltas = result.2;
+                first_loop = false;
             } else {
-                acc
-            }
-        });
-
-        let mut sums = weight_deltas[0].clone();
-        for delta in weight_deltas {
-            for (i, d) in delta.into_iter().enumerate() {
-                sums[i] = &sums[i] + d;
+                for i in 0..model.num_lin_layers {
+                    weight_deltas[i] = &weight_deltas[i] + &result.1[i];
+                    bias_deltas[i] = &bias_deltas[i] + &result.2[i];
+                }
             }
         }
-        for s in sums.iter_mut() {
-            *s /= (batch_size as f64);
-        }
 
-        let mut sums_biases = bias_deltas[0].clone();
-        for delta in bias_deltas {
-            for (i, d) in delta.into_iter().enumerate() {
-                sums_biases[i] = &sums_biases[i] + d;
-            }
-        }
-        for s in sums_biases.iter_mut() {
-            *s /= (batch_size as f64);
-        }
+        let accuracy = correct_results as f64 / batch_size as f64;
 
-        for (i, (d_w,d_b)) in sums.into_iter().rev().zip(sums_biases.into_iter().rev()).enumerate(){
+        for i in 0..model.num_lin_layers {
             let layer = match model.steps.get_mut(2*i).unwrap() {
                 model::Step::LinearLayer(l) => Ok(l),
                 _ => Err(eyre!("Error When Trying to Adjust Layer")),
             };
             if layer.is_ok() {
-                layer.unwrap().adjust_weights(d_w * learning_rate, d_b * learning_rate);
+                layer.unwrap().adjust_weights(
+                    &weight_deltas[i] * learning_rate,
+                    &bias_deltas[i] * learning_rate);
             }
         }
 
-        if i%50 == 0 {
+        if i%500 == 0 {
             let mut val_accuracy = 0.0;
             Zip::from(mnist_dataset.test_data.rows())
                 .and(mnist_dataset.test_labels.rows())
@@ -91,7 +81,6 @@ fn main() {
                         val_accuracy += 1.0 / 10_000.0;
                     }
                 });
-
             println!("For {}th epoch: train accuracy: {} | validation accuracy : {}", i, accuracy, val_accuracy);
         }
 
