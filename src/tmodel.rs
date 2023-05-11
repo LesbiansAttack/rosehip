@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use ndarray::Array2;
 use crate::step::{
     LinearLayer, 
@@ -101,10 +99,9 @@ impl Model {
         Ok(final_output)
     }
 
-    pub fn finalize_batch(&mut self, batch_size: usize) {
-        let b = batch_size as f64;
+    pub fn finalize_batch(&mut self) {
         for step in self.steps.iter_mut() {
-            step.finalize_batch(b);
+            step.apply_gradients();
         }
     }
 

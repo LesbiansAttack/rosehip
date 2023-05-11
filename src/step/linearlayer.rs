@@ -10,8 +10,9 @@ pub struct LinearLayer {
     biases: Array2<f64>,
     recent_input: Array2<f64>,
     learning_rate: f64,
-    delta_weights: Array2<f64>,
-    delta_biases: Array2<f64>,
+    weights_gradient: Array2<f64>,
+    bias_gradient: Array2<f64>,
+    num_gradients: f64,
 }
 
 impl Step for LinearLayer {
@@ -29,14 +30,18 @@ impl Step for LinearLayer {
         let new_error = error * previous_gradient;
         let delta_weights = new_error.dot(&self.recent_input.t());
         let output_error = self.weights.t().dot(&new_error);
-        self.delta_weights = &self.delta_weights + delta_weights;
-        self.delta_biases = &self.delta_biases + new_error;
+        self.weights_gradient = &self.weights_gradient + delta_weights;
+        self.bias_gradient = &self.bias_gradient + new_error;
+        self.num_gradients = &self.num_gradients + 1.0;
         (output_error, Array2::from_elem((self.number_of_inputs, 1), 1.0))
     }
-    fn finalize_batch(&mut self, batch_size: f64) {
-        self.adjust_weights(&self.delta_weights / batch_size, &self.delta_biases / batch_size);
-        self.delta_weights = Array2::zeros((self.number_of_outputs, self.number_of_inputs));
-        self.delta_biases = Array2::zeros((self.number_of_outputs, 1));
+    fn apply_gradients(&mut self) {
+        if self.num_gradients > 0.0 {
+            self.adjust_weights(&self.weights_gradient / self.num_gradients, &self.bias_gradient / self.num_gradients);
+            self.weights_gradient = Array2::zeros((self.number_of_outputs, self.number_of_inputs));
+            self.bias_gradient = Array2::zeros((self.number_of_outputs, 1));
+            self.num_gradients = 0.0;
+        }
     }
 }
 
@@ -51,8 +56,9 @@ impl LinearLayer {
             biases,
             recent_input: Array2::zeros((inputs, 1)),
             learning_rate,
-            delta_weights: Array2::zeros((outputs, inputs)),
-            delta_biases: Array2::zeros((outputs, 1)),
+            weights_gradient: Array2::zeros((outputs, inputs)),
+            bias_gradient: Array2::zeros((outputs, 1)),
+            num_gradients: 0.0,
         }
     }
 

@@ -40,7 +40,7 @@ fn main() {
             }
             println!("t: {:.2?}", t.elapsed());
         }
-        model.finalize_batch(batch_size);
+        model.finalize_batch();
 
         if i%100 == 0 {
             let mut val_accuracy = 0.0;

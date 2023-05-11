@@ -21,5 +21,5 @@ pub trait Step {
     fn forward(&mut self, input_array: Array2<f64>) -> Array2<f64>;
     fn backward(&mut self, error: Array2<f64>, previous_gradient: Array2<f64>) -> (Array2<f64>, Array2<f64>);
     #[allow(unused_variables)]
-    fn finalize_batch(&mut self, batch_size: f64){}
+    fn apply_gradients(&mut self){}
 }
