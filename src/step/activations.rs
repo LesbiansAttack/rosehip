@@ -1,5 +1,5 @@
 use ndarray::Array2;
-use crate::steps::step::{Step, StepType};
+use crate::step::{Step, StepType};
 use crate::math::{
     sigmoid,
     d_sigmoid,

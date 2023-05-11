@@ -1,4 +1,4 @@
-use crate::steps::step::*;
+use crate::step::{Step, StepType};
 use ndarray::Array2;
 use ndarray_rand::{RandomExt, rand_distr::{StandardNormal, Uniform}};
 

@@ -1,5 +1,13 @@
+use std::time::Instant;
+
 use ndarray::Array2;
-use crate::steps::{linearlayer::{LinearLayer}, step::{Step, StepType}, activations::{SoftmaxActivation, SigmoidActivation}};
+use crate::step::{
+    LinearLayer, 
+    Step, 
+    StepType, 
+    SoftmaxActivation,
+    SigmoidActivation
+};
 use eyre::{eyre, Result};
 
 use crate::math::d_squared_error;

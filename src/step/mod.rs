@@ -1,3 +1,11 @@
+mod linearlayer;
+mod activations;
+
+pub use linearlayer::LinearLayer;
+pub use activations::{
+    SigmoidActivation,
+    SoftmaxActivation
+};
 use ndarray::Array2;
 
 

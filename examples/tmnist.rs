@@ -19,12 +19,12 @@ fn main() {
 
     let now = Instant::now();
 
-    let epochs = 5000;
-    let batch_size = 64;
+    let epochs = 1;
+    let batch_size = 128;
 
     let mut rng = thread_rng();
 
-    for i in 0..epochs {
+    for i in 1..=epochs {
 
         let indexes = index::sample(&mut rng, 50_000, batch_size);
 
@@ -32,10 +32,13 @@ fn main() {
         for index in indexes {
             let data = mnist_dataset.training_data.slice(s![index, ..]).to_owned().into_shape((784,1)).unwrap();
             let label = mnist_dataset.training_labels.get([index, 0]).unwrap();
+            let t = Instant::now();
+
             let result = model.forward_backward(data, label).unwrap();
             if result.argmax() == Ok((*label as usize, 0)){
                 accuracy += 1.0 / batch_size as f64;
             }
+            println!("t: {:.2?}", t.elapsed());
         }
         model.finalize_batch(batch_size);
 
